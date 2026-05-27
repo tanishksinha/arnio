@@ -3042,3 +3042,90 @@ def test_float64_rejects_string_min_with_valid_max():
 def test_float64_rejects_bool_pair():
     with pytest.raises(TypeError, match="min must be numeric or None"):
         ar.Float64(min=True, max=False)
+
+
+def test_uuid_validation_accepts_valid_uuids():
+    import arnio as ar
+    import pandas as pd
+
+    frame = ar.from_pandas(
+        pd.DataFrame(
+            {
+                "id": [
+                    "123e4567-e89b-12d3-a456-426614174000",
+                    "550e8400-e29b-41d4-a716-446655440000",
+                ]
+            }
+        )
+    )
+    schema = ar.Schema({"id": ar.UUID(nullable=False)})
+    result = ar.validate(frame, schema)
+    assert result.passed
+
+
+def test_uuid_validation_rejects_invalid_uuids():
+    import arnio as ar
+    import pandas as pd
+
+    frame = ar.from_pandas(
+        pd.DataFrame({"id": ["123e4567-e89b-12d3-a456-42661417400", "not-a-uuid"]})
+    )
+    schema = ar.Schema({"id": ar.UUID(nullable=False)})
+    result = ar.validate(frame, schema)
+    assert not result.passed
+    assert result.issue_count == 2
+    assert result.issues[0].rule == "uuid"
+
+
+def test_ipv4_validation_accepts_valid_ips():
+    import arnio as ar
+    import pandas as pd
+
+    frame = ar.from_pandas(
+        pd.DataFrame({"ip": ["192.168.1.1", "0.0.0.0", "255.255.255.255"]})
+    )
+    schema = ar.Schema({"ip": ar.IPv4(nullable=False)})
+    result = ar.validate(frame, schema)
+    assert result.passed
+
+
+def test_ipv4_validation_rejects_invalid_ips():
+    import arnio as ar
+    import pandas as pd
+
+    frame = ar.from_pandas(
+        pd.DataFrame({"ip": ["256.0.0.1", "192.168.1", "not-an-ip", "192.168.01.1"]})
+    )
+    schema = ar.Schema({"ip": ar.IPv4(nullable=False)})
+    result = ar.validate(frame, schema)
+    assert not result.passed
+    assert result.issue_count == 4
+    assert result.issues[0].rule == "ipv4"
+
+
+def test_mac_address_validation_accepts_valid_macs():
+    import arnio as ar
+    import pandas as pd
+
+    frame = ar.from_pandas(
+        pd.DataFrame(
+            {"mac": ["00:1A:2B:3C:4D:5E", "00-1A-2B-3C-4D-5E", "00:1a:2b:3c:4d:5e"]}
+        )
+    )
+    schema = ar.Schema({"mac": ar.MACAddress(nullable=False)})
+    result = ar.validate(frame, schema)
+    assert result.passed
+
+
+def test_mac_address_validation_rejects_invalid_macs():
+    import arnio as ar
+    import pandas as pd
+
+    frame = ar.from_pandas(
+        pd.DataFrame({"mac": ["00:1A:2B:3C:4D", "00-1A-2B-3C-4D-5E-6F", "not-a-mac"]})
+    )
+    schema = ar.Schema({"mac": ar.MACAddress(nullable=False)})
+    result = ar.validate(frame, schema)
+    assert not result.passed
+    assert result.issue_count == 3
+    assert result.issues[0].rule == "mac_address"

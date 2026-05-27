@@ -2593,6 +2593,9 @@ _SEMANTIC_PATTERNS = {
     "country_code": r"[A-Z]{2}",
     "currency_code": r"[A-Z]{3}",
     "date": r"\d{4}-\d{2}-\d{2}",
+    "uuid": r"(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+    "ipv4": r"(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])",
+    "mac_address": r"(?i)([0-9a-f]{2}[:-]){5}([0-9a-f]{2})",
 }
 
 # Registry for custom validators registered via register_validator()
@@ -2690,4 +2693,79 @@ def Custom(
         unique=unique,
         semantic=f"custom:{name}",
         severity=severity,
+    )
+
+
+def UUID(
+    nullable: bool = True,
+    required_if: tuple[str, Any] | None = None,
+    severity: str = "error",
+) -> Field:
+    """Create a Field ensuring values are valid UUIDs.
+
+    Parameters
+    ----------
+    nullable : bool
+        Whether null values are allowed.
+    required_if : tuple[str, Any], optional
+        (column_name, expected_value) conditional requirement.
+    severity : str
+        Validation severity ('error' or 'warning').
+    """
+    return Field(
+        dtype="string",
+        nullable=nullable,
+        required_if=required_if,
+        severity=severity,
+        semantic="uuid",
+    )
+
+
+def IPv4(
+    nullable: bool = True,
+    required_if: tuple[str, Any] | None = None,
+    severity: str = "error",
+) -> Field:
+    """Create a Field ensuring values are valid IPv4 addresses.
+
+    Parameters
+    ----------
+    nullable : bool
+        Whether null values are allowed.
+    required_if : tuple[str, Any], optional
+        (column_name, expected_value) conditional requirement.
+    severity : str
+        Validation severity ('error' or 'warning').
+    """
+    return Field(
+        dtype="string",
+        nullable=nullable,
+        required_if=required_if,
+        severity=severity,
+        semantic="ipv4",
+    )
+
+
+def MACAddress(
+    nullable: bool = True,
+    required_if: tuple[str, Any] | None = None,
+    severity: str = "error",
+) -> Field:
+    """Create a Field ensuring values are valid IEEE 802 MAC-48 addresses.
+
+    Parameters
+    ----------
+    nullable : bool
+        Whether null values are allowed.
+    required_if : tuple[str, Any], optional
+        (column_name, expected_value) conditional requirement.
+    severity : str
+        Validation severity ('error' or 'warning').
+    """
+    return Field(
+        dtype="string",
+        nullable=nullable,
+        required_if=required_if,
+        severity=severity,
+        semantic="mac_address",
     )
